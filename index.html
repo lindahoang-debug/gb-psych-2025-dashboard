@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GB Psychische Gesundheit</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;color:#1e293b;font-size:14px}
+.header{background:#1e3a5f;color:#fff;padding:24px 32px}
+.header h1{font-size:1.4rem;font-weight:700}
+.header p{opacity:.75;margin-top:4px;font-size:.82rem}
+.legend{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:.72rem;background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.filters{background:#fff;border-bottom:2px solid #e2e8f0;padding:10px 32px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters span{font-size:.75rem;font-weight:600;color:#64748b}
+.fbtn{padding:5px 14px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;cursor:pointer;font-size:.75rem;color:#475569;transition:all .15s}
+.fbtn.active{background:#1e3a5f;border-color:#1e3a5f;color:#fff;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;padding:0 32px;gap:0;overflow-x:auto}
+.tab{padding:12px 20px;cursor:pointer;font-size:.82rem;font-weight:500;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+.tab.active{color:#1e3a5f;border-bottom-color:#1e3a5f;font-weight:700}
+.content{padding:24px 32px}
+.sec-title{font-size:1rem;font-weight:700;color:#1e3a5f;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:inline-block;width:4px;height:18px;background:#1e3a5f;border-radius:2px}
+/* Category cards */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:24px}
+.cat-card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid #1e3a5f}
+.cat-name{font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.cat-val{font-size:2rem;font-weight:800;margin-bottom:2px}
+.cat-bar{background:#f1f5f9;border-radius:6px;height:6px;margin-top:6px;overflow:hidden}
+.cat-fill{height:100%;border-radius:6px}
+/* Question sub-rows */
+.q-rows{margin-top:10px;display:flex;flex-direction:column;gap:3px}
+.q-row{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:#475569;background:#f8fafc;border-radius:4px;padding:3px 6px;gap:6px}
+.q-row span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700;min-width:42px;text-align:center}
+/* Tables */
+.tbl-wrap{overflow-x:auto;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+th{background:#1e3a5f;color:#fff;padding:9px 12px;font-size:.75rem;font-weight:600;white-space:nowrap}
+th.c,td.c{text-align:center}
+td{padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:.78rem;color:#334155}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.diff-p{color:#dc2626;font-weight:700}
+.diff-n{color:#16a34a;font-weight:700}
+.diff-0{color:#94a3b8}
+.hidden{display:none}
+/* Lead comparison boxes */
+.lead-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.lead-box{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.lead-box h3{font-size:.8rem;font-weight:700;color:#1e3a5f;margin-bottom:12px}
+@media(max-width:600px){.lead-grid{grid-template-columns:1fr}.content,.filters,.tabs,.header{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧠 GB Psychische Gesundheit – Auswertung</h1>
+  <p>Befragungszeitraum Oktober – November 2025 &nbsp;|&nbsp; n = <span id="nTotal"></span> Antworten &nbsp;|&nbsp; Skala 1–5, hoher Wert = hohe Belastung (positive Fragen umgepolt: 6 − Wert)</p>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#4ade80"></div>≤ 2,0 gering</div>
+    <div class="leg"><div class="leg-dot" style="background:#facc15"></div>2,1–2,5 moderat</div>
+    <div class="leg"><div class="leg-dot" style="background:#fb923c"></div>2,6–3,0 mittel</div>
+    <div class="leg"><div class="leg-dot" style="background:#f87171"></div>3,1–3,5 erhöht</div>
+    <div class="leg"><div class="leg-dot" style="background:#dc2626"></div>≥ 3,6 hoch</div>
+  </div>
+</div>
+
+<div class="filters">
+  <span>Gesellschaft:</span>
+  <div id="orgFilters"></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">Überblick</div>
+  <div class="tab" onclick="showTab('functions',this)">Nach Funktion</div>
+  <div class="tab" onclick="showTab('leadership',this)">Führung</div>
+  <div class="tab" onclick="showTab('companies',this)">Gesellschaften</div>
+  <div class="tab" onclick="showTab('questions',this)">Einzelfragen</div>
+</div>
+
+<div class="content">
+  <div id="tab-overview"></div>
+  <div id="tab-functions" class="hidden"></div>
+  <div id="tab-leadership" class="hidden"></div>
+  <div id="tab-companies" class="hidden"></div>
+  <div id="tab-questions" class="hidden"></div>
+</div>
+
+<script>
+const RAW=[
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[5,5,4,5,2,2,3,5,1,5,4,4,1,2,4,3,2,2,4,2,1,4,3,1,2,4,4,5,2,5,4,1,1,2,2,2,2,1,4,2,1]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Ja",q:[5,4,4,4,2,4,1,2,4,5,4,2,3,1,5,5,2,4,4,4,3,4,4,3,2,3,2,4,4,4,4,3,3,2,4,3,1,2,3,3,3,3]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[5,5,2,5,5,5,1,3,4,3,4,5,5,1,5,5,5,4,4,1,1,2,4,3,2,2,2,5,4,1,4,4,1,2,2,2,1,3,3,2,2,2]},
+  {org:"Seibert Solutions",fn:"IT / Data",lead:"Nein",q:[5,5,null,3,null,2,null,5,2,4,4,4,4,3,1,1,1,2,5,4,4,2,4,null,2,4,4,5,3,1,4,4,4,4,2,3,4,4,3,4,2,2]},
+  {org:"Seibert Group",fn:"Sustainability / Legal",lead:"Nein",q:[2,4,5,1,2,3,4,3,3,5,5,5,4,3,5,1,2,1,4,4,2,4,5,3,2,2,1,4,2,2,3,2,4,5,4,4,3,5,4,3,4,2]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Ja",q:[4,3,2,4,3,4,2,4,3,5,4,5,4,2,5,4,2,2,4,3,4,3,5,4,2,4,2,4,4,2,5,3,4,3,5,5,4,4,1,2,3,3]},
+  {org:"Seibert Products",fn:"Product Management",lead:"Ja",q:[5,2,2,2,4,4,1,1,4,3,5,4,4,4,1,1,4,4,4,2,3,3,4,4,2,3,2,4,2,2,1,2,4,3,4,3,2,4,4,4,4,3]},
+  {org:"Seibert Group",fn:"Sustainability / Legal",lead:"Ja",q:[5,2,1,2,4,4,1,2,4,4,3,5,3,3,1,1,1,3,5,5,5,3,2,4,2,4,4,5,1,2,2,1,5,2,5,5,2,4,3,1,5,4]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[5,4,2,3,4,1,1,2,3,2,5,5,4,4,1,1,2,3,5,4,3,4,1,4,4,5,4,5,1,1,2,1,5,4,4,3,3,5,4,4,4,4]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Ja",q:[5,5,3,4,4,1,1,4,2,4,5,5,3,3,5,1,4,2,5,4,3,4,3,5,2,2,3,4,5,1,2,4,4,1,5,4,4,4,5,4,5,3]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"weiß nicht",q:[5,5,4,5,4,2,1,4,3,4,4,3,1,1,1,1,4,4,4,5,2,3,5,2,3,2,1,1,4,4,4,5,2,3,3,2,1,3,4,1,1,1]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[4,4,2,2,3,3,1,4,2,5,5,2,3,5,3,1,1,3,2,3,4,2,4,5,2,3,5,5,4,4,1,2,4,1,5,3,4,5,4,1,1,1]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"weiß nicht",q:[4,3,2,2,5,4,1,2,5,3,5,3,4,3,1,1,3,4,4,3,4,3,4,2,2,3,3,3,2,3,1,2,3,3,4,4,4,4,4,3,4,4]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Ja",q:[5,3,4,4,4,3,1,2,4,3,3,4,4,2,2,1,3,3,4,2,2,3,4,4,3,3,3,4,2,1,4,2,5,3,4,3,3,4,4,3,4,3]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"weiß nicht",q:[2,2,2,2,4,3,1,2,3,3,4,5,3,1,1,1,2,1,4,4,4,3,2,4,4,3,3,4,1,1,2,2,4,2,4,4,3,4,3,3,2,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[4,3,3,2,2,4,1,2,3,5,4,4,1,1,1,1,1,3,2,5,4,4,3,3,2,1,2,2,4,4,4,4,3,4,3,3,2,2,3,2,2,3]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[5,4,3,4,4,2,2,3,3,4,4,5,2,2,1,1,3,3,4,3,2,3,4,2,2,2,2,4,3,1,4,4,2,2,4,1,1,2,2,2,2,2]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Ja",q:[3,2,4,3,3,4,3,4,4,4,4,4,4,4,5,5,5,2,2,3,3,3,3,4,2,2,2,5,2,2,4,4,2,2,3,3,1,4,4,2,3,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[5,5,4,5,4,4,5,5,2,5,4,4,1,2,5,1,3,2,3,2,2,1,5,2,2,1,1,2,5,1,5,5,3,2,2,1,2,2,1,1,1,2]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[4,3,5,2,3,3,4,5,3,5,3,2,4,4,5,5,5,4,5,3,2,4,3,5,3,4,3,5,3,3,4,3,2,5,4,3,4,3,3,2,4,2]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Nein",q:[4,4,1,4,5,5,1,1,4,2,4,4,3,2,5,4,2,2,4,5,4,5,4,5,2,3,3,4,3,3,1,2,4,5,5,2,2,5,5,5,5,5]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,3,4,2,4,3,1,4,4,4,4,3,4,4,4,1,2,4,4,5,4,5,3,4,3,4,4,5,2,4,2,2,5,4,4,4,3,4,2,2,3,3]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Ja",q:[5,5,1,5,1,3,1,4,3,1,1,3,2,1,2,1,1,5,5,4,5,3,5,2,2,2,2,1,4,1,5,5,2,2,3,1,2,2,3,2,4,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[5,4,3,3,4,3,2,5,4,4,5,5,4,3,3,3,1,3,4,5,2,3,4,4,2,3,2,5,2,1,3,3,5,3,5,5,2,3,2,2,4,3]},
+  {org:"Seibert Solutions",fn:"Marketing / Design",lead:"Nein",q:[5,3,2,3,3,3,1,5,3,2,4,5,2,2,5,5,1,2,3,5,5,3,4,4,1,2,2,4,4,1,2,1,5,2,2,4,3,4,4,2,3,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[3,4,3,4,4,3,4,4,4,4,4,4,2,2,5,4,2,3,4,4,4,2,4,4,2,null,2,3,3,3,4,3,3,3,4,3,3,3,3,3,4,3]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[5,4,5,4,3,2,1,5,3,3,4,3,3,2,5,1,2,4,4,4,2,4,5,4,3,4,5,5,3,5,2,4,2,4,5,3,2,2,2,2,3,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[3,3,4,2,3,3,3,2,3,1,4,3,3,3,2,3,2,4,3,4,4,4,3,3,2,2,2,3,2,4,2,3,4,4,4,5,4,3,3,3,3,3]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[5,3,1,3,4,4,1,5,3,5,5,4,4,5,5,1,1,2,4,5,5,4,3,5,4,4,5,5,2,4,2,3,4,5,4,3,4,5,1,1,3,2]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[5,5,2,3,4,3,1,1,3,4,5,3,2,3,1,1,2,4,4,5,3,5,2,5,5,5,5,5,1,4,4,4,3,null,5,4,3,3,3,1,2,3]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[5,4,3,4,4,4,4,2,4,2,5,2,2,3,5,1,2,4,2,5,2,4,5,4,1,2,2,5,3,1,4,5,5,2,4,4,3,3,3,3,3,4]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"weiß nicht",q:[4,4,4,4,3,3,1,1,3,3,4,5,3,2,4,1,3,2,4,4,2,4,4,4,2,1,1,2,4,4,4,4,5,2,4,4,2,4,3,2,2,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"weiß nicht",q:[1,2,2,2,4,4,2,1,4,2,5,4,4,2,5,1,1,2,3,4,4,4,4,3,2,3,5,5,1,1,2,1,5,4,4,5,3,2,2,3,4,5]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Nein",q:[5,2,4,1,4,5,2,4,5,4,5,3,2,2,5,1,2,5,4,5,5,5,5,5,3,4,5,4,1,2,2,1,5,5,5,2,3,4,3,3,4,4]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,2,2,1,4,4,3,1,3,4,3,2,4,3,4,1,1,3,4,4,4,4,3,4,2,5,4,4,2,3,1,1,4,1,4,3,2,4,3,2,4,4]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Ja",q:[4,3,1,4,5,5,1,3,5,3,5,5,3,3,3,1,1,1,4,4,5,4,3,5,3,2,2,5,2,1,5,3,4,3,5,4,3,5,3,4,3,2]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,1,1,4,4,4,1,4,3,4,4,2,4,4,4,1,4,4,5,4,4,4,3,5,4,4,4,4,2,3,4,4,4,4,4,4,3,4,3,2,4,3]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[5,5,3,3,4,2,4,2,3,4,4,5,4,2,3,4,4,1,3,3,1,4,3,2,4,4,3,5,1,2,5,4,4,3,2,1,2,4,2,3,3,2]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[4,2,5,1,2,4,2,2,4,1,4,5,5,3,1,1,4,4,4,4,4,4,3,5,3,4,5,5,2,2,1,2,5,4,5,5,5,5,3,2,5,2]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Ja",q:[5,5,2,5,3,3,4,5,3,5,5,5,3,1,3,2,2,5,4,5,2,3,5,3,3,5,5,5,1,1,3,5,1,3,5,2,2,1,1,1,5,1]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[5,3,1,3,3,2,1,3,2,3,4,3,2,2,1,1,1,2,3,5,2,4,3,3,2,2,1,3,4,1,3,4,2,3,2,1,2,4,4,2,3,2]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Nein",q:[5,4,1,2,5,3,1,2,3,4,5,4,2,1,1,1,3,4,2,5,1,4,5,1,2,1,3,2,4,2,3,2,3,2,3,3,2,4,3,1,1,2]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[4,2,3,2,4,2,4,3,4,4,4,3,4,3,4,1,3,3,4,4,3,4,4,3,2,4,4,4,2,3,2,4,4,4,4,3,2,4,3,3,3,3]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,5,1,2,4,4,1,2,2,4,4,3,4,5,5,1,3,3,4,4,1,5,3,5,2,4,5,4,2,1,3,2,4,5,5,4,4,4,3,1,2,2]},
+  {org:"Seibert Solutions",fn:"IT / Data",lead:"Nein",q:[2,2,2,1,5,4,2,2,4,2,5,5,5,4,3,3,1,2,4,5,5,4,3,4,3,3,3,4,1,1,2,2,5,4,4,5,5,5,5,5,5,4]},
+  {org:"Seibert Group",fn:"Sonstige",lead:"Nein",q:[5,4,3,3,2,2,3,1,2,5,5,1,2,4,3,1,1,5,5,5,4,4,1,3,2,4,5,null,3,4,1,2,4,5,5,5,3,5,5,5,5,4]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[4,5,3,5,4,3,4,2,3,2,4,2,4,1,1,1,5,4,5,1,2,1,4,2,1,3,1,5,4,4,4,5,4,4,5,4,5,5,5,2,3,3]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Ja",q:[5,3,4,1,4,4,5,5,5,2,5,5,5,5,5,5,3,4,4,5,4,3,4,5,3,5,5,5,2,1,2,2,4,2,5,4,4,5,4,5,5,4]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Nein",q:[5,5,4,5,5,3,2,1,3,4,5,4,4,2,1,1,4,4,5,2,1,3,4,2,2,3,1,4,4,3,5,4,3,2,4,3,2,2,4,2,4,1]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Ja",q:[5,5,5,5,2,5,3,5,3,4,5,3,2,5,1,1,2,3,2,5,2,5,5,5,1,1,1,2,5,5,4,5,5,2,5,3,1,5,2,3,4,3]},
+  {org:"Seibert Group",fn:"Sustainability / Legal",lead:"Nein",q:[4,3,3,2,3,2,2,4,4,2,4,4,3,5,1,1,4,3,3,4,2,4,2,4,4,4,4,3,2,1,2,2,4,5,3,4,4,4,3,4,4,4]},
+  {org:"Seibert Solutions",fn:"Marketing / Design",lead:"Nein",q:[5,4,4,3,2,3,4,3,2,4,4,4,2,3,4,1,2,2,4,4,4,3,2,4,4,3,3,3,2,1,4,3,3,3,4,2,2,4,3,2,3,3]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Nein",q:[1,3,3,1,4,4,5,1,5,1,5,4,5,5,5,1,1,4,5,5,5,5,1,4,3,5,5,5,1,1,1,1,5,3,4,5,2,5,5,3,5,5]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[3,1,2,1,4,4,3,1,4,4,5,2,4,2,5,1,1,5,5,5,2,3,3,5,4,4,4,3,1,4,1,1,5,5,5,3,3,5,5,1,1,5]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Nein",q:[4,4,2,2,3,2,2,2,3,3,5,5,4,3,4,1,1,1,3,4,4,4,2,3,4,2,4,4,2,3,2,2,4,4,4,4,3,4,5,5,4,3]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"weiß nicht",q:[5,5,4,4,5,5,5,5,4,5,5,5,3,4,5,5,5,3,4,2,1,3,5,3,2,1,1,4,3,3,2,5,1,2,3,2,1,5,4,4,5,3]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[5,3,4,3,5,2,5,3,4,1,5,5,5,5,5,1,1,3,5,5,5,2,3,5,4,2,2,4,2,1,2,1,5,5,5,5,5,4,4,3,2,5]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[4,4,3,4,3,3,2,4,2,5,3,3,3,2,4,5,3,3,4,4,3,5,4,4,4,3,4,5,4,2,3,2,4,5,4,4,4,3,3,2,3,3]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Nein",q:[4,4,3,2,5,4,3,2,4,4,5,3,2,3,1,1,1,5,4,5,5,4,3,4,3,3,3,3,1,1,1,1,4,5,3,1,2,2,3,1,3,3]},
+  {org:"Seibert Group",fn:"Sustainability / Legal",lead:"Ja",q:[4,4,4,4,5,4,1,2,3,5,5,5,5,4,1,1,3,1,5,5,3,4,3,1,1,4,2,3,3,1,2,1,4,5,5,3,2,4,4,4,3,3]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[5,4,1,2,5,5,1,2,5,1,5,4,4,4,1,1,1,5,5,5,4,2,2,5,4,5,5,5,2,1,1,1,5,5,5,2,5,1,1,1,5,5]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Ja",q:[5,2,1,2,5,2,1,5,3,3,3,5,1,1,3,1,1,1,2,4,5,2,3,4,2,4,3,5,2,3,5,3,3,4,5,5,5,4,3,3,3,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[5,5,5,5,3,2,5,4,2,2,3,3,2,1,5,5,3,2,5,1,2,1,5,2,1,4,4,3,5,1,5,5,3,1,4,1,1,3,3,2,1,3]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[4,2,4,3,4,4,3,3,4,3,5,5,4,4,1,1,1,3,4,5,5,5,4,4,3,4,4,5,2,1,1,1,5,5,4,5,4,4,4,4,4,4]},
+  {org:"Seibert Products",fn:"OE / PD / AC",lead:"weiß nicht",q:[4,5,5,4,2,4,5,3,2,3,4,5,2,3,5,5,4,3,3,4,2,3,4,4,2,3,2,4,4,1,4,5,3,3,4,3,3,4,4,2,3,2]},
+  {org:"Seibert Products",fn:"Product Management",lead:"Ja",q:[3,1,2,2,5,5,1,2,5,1,2,5,5,2,1,1,3,2,4,1,5,1,3,5,2,4,5,5,4,1,3,1,5,4,5,5,4,5,5,4,5,4]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[4,4,2,2,3,4,1,2,3,4,4,4,3,3,4,2,3,2,4,4,3,3,3,4,3,4,5,5,2,2,3,2,4,3,2,4,3,4,5,3,4,4]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Nein",q:[5,4,3,3,3,2,2,2,3,4,4,4,2,2,1,1,3,2,3,3,4,3,5,3,1,2,1,3,3,1,2,2,2,1,4,3,2,3,3,1,1,2]},
+  {org:"Seibert Solutions",fn:"IT / Data",lead:"Nein",q:[4,4,1,3,4,3,1,2,2,3,5,4,3,2,2,1,1,1,4,5,2,5,2,3,4,3,1,5,2,3,4,3,2,3,4,4,2,3,2,2,3,3]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[5,5,2,3,4,5,1,1,3,3,5,5,2,1,5,5,2,1,2,2,1,1,5,null,2,3,4,2,5,2,4,5,2,3,5,4,2,2,1,2,3,2]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[2,2,4,3,2,3,2,1,3,4,4,5,3,1,5,5,2,3,2,5,5,3,4,2,3,3,4,3,4,2,2,3,3,4,5,4,1,3,2,3,2,2]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[5,2,4,1,4,4,2,2,4,1,2,3,3,1,5,5,1,3,5,5,5,4,2,4,5,4,4,4,1,2,2,1,4,4,3,4,3,4,5,2,4,5]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[5,5,1,5,5,5,1,1,2,1,4,5,4,3,4,4,4,2,3,2,3,3,4,4,2,3,3,3,3,1,5,4,3,2,3,2,1,2,2,5,2,2]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Ja",q:[4,1,1,1,5,5,1,3,5,1,5,5,4,3,5,5,2,1,4,5,5,4,3,5,4,5,4,5,1,3,4,1,4,3,5,5,3,5,4,5,5,5]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[4,4,4,2,3,2,5,4,2,4,5,4,4,3,2,2,2,2,4,5,3,5,2,5,4,4,4,4,2,2,4,2,5,4,5,3,3,4,3,2,4,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"weiß nicht",q:[5,4,2,3,4,3,1,2,3,3,2,4,2,1,3,4,5,3,2,3,3,2,5,4,1,2,1,4,3,3,4,5,1,2,3,3,2,2,2,1,2,3]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"weiß nicht",q:[3,1,3,2,4,5,1,2,4,3,5,3,3,4,1,1,1,5,5,5,4,4,3,3,4,4,3,5,1,4,2,null,5,2,4,5,4,3,2,3,4,3]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[5,5,2,3,3,2,5,1,3,4,5,5,4,2,1,1,2,2,4,5,1,3,4,5,3,5,5,5,1,3,3,3,5,5,5,5,5,5,4,5,5,3]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[3,3,1,3,5,5,1,3,5,3,5,5,3,3,5,2,3,1,3,2,3,2,4,2,3,1,2,3,2,4,4,5,3,3,3,1,1,4,4,3,4,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"weiß nicht",q:[3,2,1,2,4,4,1,2,4,3,4,4,4,3,3,1,1,4,4,5,4,4,3,2,4,4,4,4,2,2,1,1,5,4,5,5,4,4,3,2,1,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[5,4,3,4,4,2,5,2,3,4,4,5,5,5,1,1,3,1,4,4,2,1,4,4,1,4,3,4,3,1,5,5,3,2,5,5,3,5,5,3,3,2]},
+  {org:"Seibert Solutions",fn:"IT / Data",lead:"Ja",q:[5,5,2,4,4,5,2,5,4,2,5,3,2,2,4,4,4,3,2,2,1,3,2,3,3,2,3,2,4,3,2,2,4,3,5,3,2,2,2,1,1,2]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Nein",q:[4,4,2,3,4,5,4,5,4,4,4,4,3,5,2,1,1,4,5,5,5,4,3,5,4,5,3,3,1,1,3,3,5,5,4,4,4,5,5,4,5,4]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[5,4,4,3,2,3,4,4,3,3,3,4,4,3,4,5,3,4,4,4,4,3,5,4,1,4,4,4,4,2,4,4,4,4,3,2,3,4,3,2,2,3]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,5,2,4,5,3,2,5,2,3,3,4,1,2,1,1,3,3,3,4,2,3,3,4,3,2,2,3,4,2,5,5,2,1,1,3,3,3,2,1,1,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[4,4,2,4,3,3,1,2,3,3,4,4,2,2,1,1,1,3,4,5,3,4,4,3,2,2,4,4,3,4,4,4,3,2,4,3,3,5,5,3,3,2]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Nein",q:[4,3,2,4,5,2,1,1,4,4,4,4,2,2,1,1,4,5,5,5,3,2,3,5,2,4,4,5,3,1,5,4,5,5,5,3,1,5,5,5,5,2]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Ja",q:[2,1,3,2,4,4,2,1,3,2,5,5,4,4,1,1,1,2,5,5,5,4,3,4,3,3,4,5,2,2,3,2,3,5,5,5,4,5,4,4,4,5]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[3,2,1,1,4,4,1,1,5,3,5,4,5,4,4,4,3,4,4,4,4,4,2,4,3,5,4,5,2,2,1,1,5,5,5,5,2,3,4,3,4,4]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Nein",q:[5,5,3,5,4,3,2,2,4,4,5,5,5,4,5,5,2,2,4,5,2,3,3,5,1,2,2,4,4,1,4,2,5,2,5,5,3,4,3,2,3,4]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[5,5,5,5,2,3,5,5,2,4,5,5,3,2,5,1,1,1,4,5,2,5,5,3,1,2,2,3,3,3,2,4,4,4,4,4,2,3,3,1,2,2]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Nein",q:[5,4,1,3,4,4,3,3,4,5,4,4,3,5,4,3,3,3,4,4,3,4,2,3,3,4,4,4,3,4,3,3,4,4,4,4,4,4,4,3,4,3]},
+  {org:"Seibert Solutions",fn:"IT / Data",lead:"Nein",q:[2,4,2,2,3,4,3,3,4,4,4,5,2,2,5,4,1,2,2,5,3,4,2,4,3,2,4,3,3,3,1,1,5,4,4,4,4,4,4,1,2,3]},
+  {org:"Seibert Solutions",fn:"Marketing / Design",lead:"Nein",q:[3,3,2,2,3,4,1,1,3,3,4,3,2,3,4,1,2,4,4,5,4,3,2,4,3,3,2,3,3,2,1,2,3,4,2,3,2,4,3,2,2,3]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Ja",q:[4,4,4,3,3,4,1,2,2,2,4,4,4,2,4,1,4,4,4,3,3,2,4,3,1,3,4,5,2,4,2,3,2,4,4,4,4,4,4,4,3,3]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Nein",q:[5,4,5,2,3,4,5,2,5,4,5,2,5,5,5,5,5,5,4,5,5,5,2,5,5,5,5,5,1,1,2,1,4,5,5,4,1,5,5,3,5,5]},
+  {org:"Seibert Solutions",fn:"IT / Data",lead:"Nein",q:[2,1,3,2,2,2,4,2,3,1,1,1,3,3,1,1,2,1,1,1,2,3,2,2,2,3,2,1,3,3,1,1,1,3,3,2,4,3,1,1,2,1]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Ja",q:[5,5,3,4,4,4,1,1,4,4,4,4,4,3,5,5,4,2,4,3,2,3,4,5,2,3,4,4,3,1,5,4,4,2,5,3,2,5,4,4,4,5]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Nein",q:[5,5,3,4,4,3,1,4,3,2,5,4,3,3,4,1,2,3,4,4,3,4,4,5,2,3,3,4,3,3,4,4,4,2,3,3,2,4,4,4,3,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Ja",q:[4,2,2,3,4,3,4,2,4,5,4,4,3,2,5,5,4,2,3,4,2,4,4,4,2,2,3,4,3,1,4,3,2,4,2,3,2,2,2,2,2,3]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Ja",q:[5,3,1,5,5,4,1,4,3,4,4,4,2,2,1,1,1,2,3,4,4,4,4,5,2,1,2,4,3,1,5,4,2,2,4,2,2,2,2,2,2,1]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Ja",q:[5,5,4,4,2,3,4,4,2,4,5,4,4,2,1,1,3,5,4,5,1,2,4,5,2,2,4,2,5,4,5,4,2,4,4,4,4,4,3,4,4,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[5,3,2,3,4,4,1,4,5,5,4,5,5,3,3,3,4,3,4,4,1,4,3,5,3,5,3,5,3,2,4,4,5,2,5,5,5,5,5,3,5,5]},
+  {org:"Seibert Group",fn:"Sonstige",lead:"Ja",q:[5,2,2,3,5,4,1,4,4,3,4,5,4,3,5,1,2,2,5,5,3,4,2,4,4,4,3,4,3,1,3,2,5,4,4,3,1,5,4,3,4,4]},
+  {org:"Seibert Products",fn:"Sales",lead:"Ja",q:[5,5,4,4,3,2,1,4,3,4,3,2,3,2,5,1,3,3,3,2,2,4,2,5,3,3,4,5,5,1,4,4,5,4,4,5,3,4,3,2,3,3]},
+  {org:"Seibert Products",fn:"IT / Data",lead:"Nein",q:[5,4,1,3,5,5,1,2,4,4,4,3,4,3,2,1,5,3,5,3,3,3,4,4,2,3,3,5,1,4,4,2,4,4,4,2,2,5,3,3,3,2]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Ja",q:[3,3,2,3,4,5,3,4,5,2,5,5,4,3,5,2,4,2,5,4,3,4,4,4,2,2,2,3,2,2,3,4,3,3,5,2,2,5,4,3,3,3]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[2,1,2,1,2,2,2,1,2,1,2,4,4,4,1,1,1,3,5,5,4,4,1,4,5,5,4,4,2,1,1,2,2,5,3,4,4,4,4,4,4,4]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[3,2,3,2,2,4,4,2,3,5,5,5,5,2,1,1,4,2,3,5,4,3,1,4,4,5,5,4,2,1,2,1,5,1,5,4,5,3,4,1,3,4]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Ja",q:[3,2,2,2,3,4,3,2,4,1,3,4,4,2,1,1,1,3,3,5,4,3,3,5,2,2,3,4,3,1,2,1,5,4,5,5,3,2,2,2,3,4]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[4,4,2,3,4,4,2,3,4,4,5,5,5,3,1,1,2,2,5,3,2,2,4,5,4,1,2,5,2,3,4,1,5,3,4,1,1,3,2,2,null,1]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Nein",q:[4,4,4,1,3,5,4,1,5,3,5,5,5,2,5,3,2,3,4,4,4,2,3,3,3,3,null,5,1,3,2,2,5,5,5,5,4,4,5,3,4,4]},
+  {org:"Seibert Products",fn:"Product Management",lead:"Ja",q:[5,5,4,5,3,3,4,2,3,3,5,5,3,1,5,3,1,2,3,3,1,3,5,3,2,1,1,4,4,1,4,5,3,3,3,4,2,3,2,2,3,4]},
+  {org:"Seibert Group",fn:"Sustainability / Legal",lead:"Nein",q:[4,4,3,3,4,3,1,2,3,2,5,4,3,3,1,1,2,3,5,3,3,2,3,4,4,4,4,3,3,1,1,2,4,2,5,5,4,4,3,3,3,2]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[5,4,4,1,3,5,4,4,4,4,4,4,4,4,5,5,3,3,3,5,4,5,3,5,4,3,2,5,1,2,2,1,5,5,5,5,4,3,3,3,4,3]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Nein",q:[4,4,2,3,4,2,1,2,3,4,4,5,2,2,4,4,4,2,3,2,2,3,5,2,2,3,2,3,3,3,4,4,3,2,3,3,2,3,3,2,4,3]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[4,3,2,2,4,2,1,4,3,3,5,3,4,2,2,1,1,2,5,5,4,5,2,3,4,4,4,4,null,1,1,1,5,5,5,5,4,3,3,3,3,3]},
+  {org:"Seibert Products",fn:"Software Engineering",lead:"Nein",q:[4,4,4,5,4,3,2,2,3,4,4,5,4,4,1,1,2,3,4,5,3,3,4,5,2,4,4,3,5,1,4,3,3,2,4,3,4,5,4,4,3,3]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Ja",q:[5,4,2,4,4,3,1,1,3,2,4,4,2,1,5,3,2,3,3,2,4,1,5,4,2,1,1,4,4,1,4,4,2,1,4,2,3,3,3,1,1,1]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[5,5,3,4,4,3,4,1,3,4,5,5,5,1,4,4,3,3,4,1,2,2,4,3,3,5,5,5,1,3,5,4,5,5,5,5,5,2,3,4,2,3]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,4,5,2,1,2,5,5,4,2,5,4,4,4,3,1,3,4,4,3,2,4,4,3,1,3,4,3,2,4,3,4,4,4,4,3,4,5,5,2,4,2]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Nein",q:[5,5,2,5,4,4,3,3,3,3,2,3,2,1,1,1,4,5,4,3,4,2,5,5,2,2,2,4,2,2,3,4,2,2,5,5,3,4,2,2,2,2]},
+  {org:"Seibert Group",fn:"Human Resources / Finance",lead:"Nein",q:[4,4,5,1,3,3,1,4,4,1,5,3,2,2,5,1,1,5,5,5,4,4,3,4,2,4,5,2,1,1,4,3,5,4,4,4,2,5,4,5,4,3]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[4,5,3,5,4,3,1,3,2,3,4,5,3,3,1,1,1,2,3,3,3,3,4,3,2,2,2,3,3,1,3,4,5,4,4,4,3,5,5,2,2,3]},
+  {org:"Seibert Group",fn:"IT / Data",lead:"Nein",q:[2,2,3,2,3,2,4,2,4,4,4,4,4,3,4,3,2,3,4,4,4,5,3,4,4,3,null,5,2,2,1,2,4,5,4,4,5,3,2,3,3,4]},
+  {org:"Seibert Solutions",fn:"Sales",lead:"Nein",q:[4,5,3,4,4,4,2,2,4,2,5,4,2,1,2,1,4,3,2,2,2,3,5,5,2,1,2,4,4,2,4,4,3,3,4,2,1,4,4,4,5,1]},
+  {org:"Seibert Group",fn:"OE / PD / AC",lead:"Nein",q:[5,5,4,5,4,2,1,4,3,3,3,3,2,2,5,1,3,3,3,2,3,3,4,2,2,1,1,2,3,3,5,5,2,2,3,2,2,3,3,2,2,2]},
+  {org:"Seibert Products",fn:"Sales",lead:"Nein",q:[4,3,2,2,3,2,1,5,3,2,3,3,2,2,5,1,2,3,4,3,4,3,4,3,2,4,4,3,3,1,3,2,4,3,4,4,2,2,3,2,4,2]},
+  {org:"Seibert Solutions",fn:"Sonstige",lead:"Ja",q:[2,4,2,2,4,4,1,1,4,1,4,5,4,1,5,5,4,2,3,2,3,3,4,3,2,2,3,3,3,3,3,3,3,4,4,2,2,null,4,5,3,4]},
+  {org:"Seibert Products",fn:"Marketing / Design",lead:"Nein",q:[5,5,3,2,3,2,1,4,2,5,3,3,3,2,4,4,1,2,4,5,5,4,3,4,2,3,2,4,4,2,4,3,2,4,2,2,2,3,2,2,2,4]},
+  {org:"Seibert Solutions",fn:"Consulting / Training",lead:"Nein",q:[4,4,1,4,5,5,1,3,3,1,4,4,2,4,1,1,2,3,3,2,2,3,4,3,3,1,1,2,3,3,4,5,4,3,5,2,4,3,2,2,3,1]},
+  {org:"Seibert Group",fn:"Marketing / Design",lead:"Nein",q:[4,1,1,1,1,1,1,3,5,4,4,4,3,3,5,5,4,3,5,1,3,3,3,3,3,5,4,4,2,1,3,3,3,4,3,3,3,3,2,2,4,4]},
+  {org:"Seibert Group",fn:"Sonstige",lead:"weiß nicht",q:[5,4,5,5,5,5,1,5,5,5,4,5,4,2,3,1,3,2,5,5,4,3,3,2,2,3,4,4,3,1,5,5,4,1,5,4,2,null,null,1,3,5]},
+  {org:"Seibert Group",fn:"Foodie / WeCare4U",lead:"Nein",q:[4,3,4,3,3,4,5,4,4,4,5,4,4,5,5,1,1,2,5,5,3,4,1,3,4,4,5,5,2,1,4,2,3,2,3,4,4,2,4,3,4,4]},
+];
+
+const QS=[
+  {l:"Physische Symptome",pos:false},{l:"Emotionale Belastung",pos:false},
+  {l:"Private Sorgen",pos:false},{l:"Arbeit psychisch belastend",pos:false},
+  {l:"Private Bewältigung",pos:true},{l:"Unter Druck ruhig bleiben",pos:true},
+  {l:"Familiäre Sorgen",pos:false},{l:"Gesundheitl. Probleme belastend",pos:false},
+  {l:"Berufl. Bewältigung",pos:true},{l:"Polit./gesell. Situation belastend",pos:false},
+  {l:"Autonomie bei Aufgaben",pos:true},{l:"Aufgaben abwechslungsreich",pos:true},
+  {l:"Ausreichend Infos",pos:true},{l:"Infokanäle handhabbar",pos:true},
+  {l:"Berufl. Apps privat",pos:false},{l:"Push-Benachrichtigungen privat",pos:false},
+  {l:"Arbeit in Freizeit",pos:false},{l:"Wiederholende Aufgaben",pos:false},
+  {l:"Rollenklarheit",pos:true},{l:"Arbeitszeiten planbar",pos:true},
+  {l:"Abschalten möglich",pos:true},{l:"Aufgaben ohne Zeitdruck",pos:true},
+  {l:"Häufige Unterbrechungen",pos:false},{l:"Konzentration ohne Wechsel",pos:true},
+  {l:"Klare Verantwortlichkeiten",pos:true},{l:"Entscheidungsbefugnisse klar",pos:true},
+  {l:"Ausreichend qualifiziert",pos:true},{l:"Fachlicher Austausch",pos:true},
+  {l:"Überforderung",pos:false},{l:"Unterforderung",pos:false},
+  {l:"Emotional belastende Situationen",pos:false},{l:"Gefühle unterdrücken",pos:false},
+  {l:"Psych. Sicherheit im Team",pos:true},{l:"Konflikte selten",pos:true},
+  {l:"Proaktiver Austausch",pos:true},{l:"Wertschätzung erhalten",pos:true},
+  {l:"Konstruktives Feedback",pos:true},{l:"Über Veränderungen informiert",pos:true},
+  {l:"Ziele von Veränderungen klar",pos:true},{l:"Auswirkungen bekannt",pos:true},
+  {l:"Erwartungen trotz Änderung klar",pos:true},{l:"Vertrauen in Bewältigung",pos:true},
+];
+
+const CATS=[
+  {n:"Gesundheit & Wohlbefinden",c:"#6366f1",qs:[0,1]},
+  {n:"Privates & Persönliches",c:"#8b5cf6",qs:[2,4,6,7,9]},
+  {n:"Resilienz & Bewältigung",c:"#0ea5e9",qs:[3,5,8]},
+  {n:"Arbeitsorganisation",c:"#f59e0b",qs:[10,11,12,13,14,15,16,17,18,19,20,21,22,23]},
+  {n:"Rollenklarheit & Qualifikation",c:"#10b981",qs:[24,25,26,27,28,29]},
+  {n:"Soziale Arbeitsbedingungen",c:"#f43f5e",qs:[30,31,32,33,34,35,36]},
+  {n:"Kommunikation & Veränderung",c:"#64748b",qs:[37,38,39,40,41]},
+];
+
+let activeOrg="Alle";
+
+function inv(v){return v==null?null:6-v;}
+function sc(v,pos){return pos?inv(v):v;}
+function avg(arr){const v=arr.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+function rScore(r){return avg(r.q.map((v,i)=>v==null?null:sc(v,QS[i].pos)));}
+function catAvg(rows,qs){const v=[];rows.forEach(r=>qs.forEach(qi=>{const x=r.q[qi];if(x!=null)v.push(sc(x,QS[qi].pos));}));return avg(v);}
+function qAvg(rows,qi){return avg(rows.map(r=>r.q[qi]).filter(v=>v!=null).map(v=>sc(v,QS[qi].pos)));}
+
+function col(v){
+  if(v==null)return"#e2e8f0";
+  if(v<=2.0)return"#4ade80";
+  if(v<=2.5)return"#facc15";
+  if(v<=3.0)return"#fb923c";
+  if(v<=3.5)return"#f87171";
+  return"#dc2626";
+}
+function tc(v){return(v!=null&&v>=3.0)?"#fff":"#1e293b";}
+function fmt(v){return v==null?"–":v.toFixed(2);}
+function filtered(){return activeOrg==="Alle"?RAW:RAW.filter(r=>r.org===activeOrg);}
+
+// ---- OVERVIEW ----
+function renderOverview(){
+  const rows=filtered();
+  let h=`<div class="sec-title">Gesamtüberblick &nbsp;<small style="font-weight:400;color:#64748b">n = ${rows.length} Antworten</small></div>`;
+  h+=`<div class="cat-grid">`;
+  CATS.forEach(cat=>{
+    const v=catAvg(rows,cat.qs);
+    h+=`<div class="cat-card" style="border-left-color:${cat.c}">
+      <div class="cat-name">${cat.n}</div>
+      <div class="cat-val" style="color:${col(v)}">${fmt(v)}</div>
+      <div class="cat-bar"><div class="cat-fill" style="width:${((v||0)/5)*100}%;background:${col(v)}"></div></div>
+      <div class="q-rows">`;
+    cat.qs.forEach(qi=>{
+      const qv=qAvg(rows,qi);
+      h+=`<div class="q-row"><span title="${QS[qi].l}">${QS[qi].l}</span><span class="badge" style="background:${col(qv)};color:${tc(qv)}">${fmt(qv)}</span></div>`;
+    });
+    h+=`</div></div>`;
+  });
+  h+=`</div>`;
+  document.getElementById("tab-overview").innerHTML=h;
+}
+
+// ---- FUNCTIONS ----
+function renderFunctions(){
+  const rows=filtered();
+  const map={};
+  rows.forEach(r=>{if(!map[r.fn])map[r.fn]=[];map[r.fn].push(r);});
+  const fns=Object.keys(map).sort();
+  let h=`<div class="sec-title">Belastung nach Funktion</div>`;
+  h+=`<div class="tbl-wrap"><table><tr><th>Funktion</th><th class="c">n</th><th class="c">Gesamt</th>`;
+  CATS.forEach(c=>h+=`<th class="c" title="${c.n}">${c.n.split(" ")[0]}</th>`);
+  h+=`</tr>`;
+  fns.forEach(fn=>{
+    const r=map[fn];
+    const tot=avg(r.map(rScore).filter(v=>v!=null));
+    h+=`<tr><td>${fn}</td><td class="c">${r.length}</td><td class="c"><span class="badge" style="background:${col(tot)};color:${tc(tot)}">${fmt(tot)}</span></td>`;
+    CATS.forEach(cat=>{const v=catAvg(r,cat.qs);h+=`<td class="c"><span class="badge" style="background:${col(v)};color:${tc(v)}">${fmt(v)}</span></td>`;});
+    h+=`</tr>`;
+  });
+  h+=`</table></div>`;
+  h+=`<p class="note">Abkürzungen: ${CATS.map(c=>`<b>${c.n.split(" ")[0]}</b> = ${c.n}`).join(" &nbsp;|&nbsp; ")}</p>`;
+  document.getElementById("tab-functions").innerHTML=h;
+}
+
+// ---- LEADERSHIP ----
+function renderLeadership(){
+  const rows=filtered();
+  const mit=rows.filter(r=>r.lead==="Ja");
+  const ohne=rows.filter(r=>r.lead==="Nein");
+  let h=`<div class="sec-title">Mit vs. ohne Führungsverantwortung</div>`;
+  h+=`<div class="lead-grid">`;
+  [{grp:"Mit Führungsverantwortung",r:mit},{grp:"Ohne Führungsverantwortung",r:ohne}].forEach(({grp,r})=>{
+    const tot=avg(r.map(rScore).filter(v=>v!=null));
+    h+=`<div class="lead-box"><h3>${grp} &nbsp;<span class="badge" style="background:${col(tot)};color:${tc(tot)}">${fmt(tot)}</span> &nbsp; n=${r.length}</h3>`;
+    CATS.forEach(cat=>{
+      const v=catAvg(r,cat.qs);
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:.78rem">
+        <span style="color:#475569">${cat.n}</span>
+        <span class="badge" style="background:${col(v)};color:${tc(v)}">${fmt(v)}</span>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=`</div>`;
+  h+=`<div class="sec-title" style="margin-top:8px">Einzelfragen im Vergleich</div>`;
+  h+=`<div class="tbl-wrap"><table><tr><th>Frage</th><th class="c">Mit Führung (n=${mit.length})</th><th class="c">Ohne Führung (n=${ohne.length})</th><th class="c">Differenz</th></tr>`;
+  QS.forEach((q,qi)=>{
+    const vm=qAvg(mit,qi),vo=qAvg(ohne,qi);
+    const d=(vm!=null&&vo!=null)?vm-vo:null;
+    const dc=d==null?"diff-0":d>0.3?"diff-p":d<-0.3?"diff-n":"diff-0";
+    h+=`<tr><td>${q.l}</td>
+      <td class="c"><span class="badge" style="background:${col(vm)};color:${tc(vm)}">${fmt(vm)}</span></td>
+      <td class="c"><span class="badge" style="background:${col(vo)};color:${tc(vo)}">${fmt(vo)}</span></td>
+      <td class="c ${dc}">${d==null?"–":(d>0?"+":"")+d.toFixed(2)}</td></tr>`;
+  });
+  h+=`</table></div>`;
+  document.getElementById("tab-leadership").innerHTML=h;
+}
+
+// ---- COMPANIES ----
+function renderCompanies(){
+  const orgs=["Seibert Group","Seibert Products","Seibert Solutions"];
+  const byOrg=o=>RAW.filter(r=>r.org===o);
+  let h=`<div class="sec-title">Vergleich nach Gesellschaft (alle Teilnehmenden)</div>`;
+  h+=`<div class="tbl-wrap"><table><tr><th>Kategorie</th>`;
+  orgs.forEach(o=>{const r=byOrg(o);const tot=avg(r.map(rScore).filter(v=>v!=null));h+=`<th class="c">${o.replace("Seibert ","")}<br><small style="font-weight:400">n=${r.length} | Ø <span class="badge" style="background:${col(tot)};color:${tc(tot)};font-size:.7rem">${fmt(tot)}</span></small></th>`;});
+  h+=`</tr>`;
+  CATS.forEach(cat=>{
+    h+=`<tr><td style="font-weight:600">${cat.n}</td>`;
+    orgs.forEach(o=>{const v=catAvg(byOrg(o),cat.qs);h+=`<td class="c"><span class="badge" style="background:${col(v)};color:${tc(v)}">${fmt(v)}</span></td>`;});
+    h+=`</tr>`;
+    cat.qs.forEach(qi=>{
+      h+=`<tr><td style="padding-left:20px;color:#64748b;font-size:.74rem">${QS[qi].l}</td>`;
+      orgs.forEach(o=>{const v=qAvg(byOrg(o),qi);h+=`<td class="c"><span class="badge" style="background:${col(v)};color:${tc(v)};font-size:.7rem">${fmt(v)}</span></td>`;});
+      h+=`</tr>`;
+    });
+  });
+  h+=`</table></div>`;
+  document.getElementById("tab-companies").innerHTML=h;
+}
+
+// ---- QUESTIONS ----
+function renderQuestions(){
+  const rows=filtered();
+  const scores=QS.map((q,i)=>({l:q.l,pos:q.pos,v:qAvg(rows,i),i})).sort((a,b)=>b.v-a.v);
+  let h=`<div class="sec-title">Alle 42 Einzelfragen – sortiert nach Belastung</div>`;
+  h+=`<div class="tbl-wrap"><table><tr><th>#</th><th>Frage</th><th class="c">Typ</th><th class="c">Ø Belastung</th></tr>`;
+  scores.forEach((s,idx)=>{
+    h+=`<tr><td style="color:#94a3b8">${idx+1}</td><td>${s.l}</td>
+      <td class="c" style="font-size:.7rem;color:#94a3b8">${s.pos?"↕ umgepolt":"direkt"}</td>
+      <td class="c"><span class="badge" style="background:${col(s.v)};color:${tc(s.v)}">${fmt(s.v)}</span></td></tr>`;
+  });
+  h+=`</table></div>`;
+  document.getElementById("tab-questions").innerHTML=h;
+}
+
+function showTab(id,el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  ["overview","functions","leadership","companies","questions"].forEach(t=>{
+    document.getElementById("tab-"+t).classList.toggle("hidden",t!==id);
+  });
+  if(id==="overview")renderOverview();
+  else if(id==="functions")renderFunctions();
+  else if(id==="leadership")renderLeadership();
+  else if(id==="companies")renderCompanies();
+  else renderQuestions();
+}
+
+function initFilters(){
+  const orgs=["Alle","Seibert Group","Seibert Products","Seibert Solutions"];
+  const c=document.getElementById("orgFilters");
+  document.getElementById("nTotal").textContent=RAW.length;
+  orgs.forEach(o=>{
+    const b=document.createElement("button");
+    b.className="fbtn"+(o==="Alle"?" active":"");
+    b.textContent=o==="Alle"?`Alle (n=${RAW.length})`:o+` (n=${RAW.filter(r=>r.org===o).length})`;
+    b.onclick=()=>{
+      activeOrg=o;
+      document.querySelectorAll(".fbtn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      const t=document.querySelector(".tab.active").getAttribute("onclick").match(/'(\w+)'/)[1];
+      if(t==="overview")renderOverview();
+      else if(t==="functions")renderFunctions();
+      else if(t==="leadership")renderLeadership();
+      else if(t==="companies")renderCompanies();
+      else renderQuestions();
+    };
+    c.appendChild(b);
+  });
+}
+
+initFilters();
+renderOverview();
+</script>
+</body>
+</html>
